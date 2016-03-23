@@ -12,17 +12,20 @@ function initAll(){
     var lives = 3;
     var liveText;
     var liveLostText;
-    var stop = false;
+    var stop = true;
+    var startButton;
+    var emitter;
     
     function preload() {
     	handleRemoteImagesOnJSFiddle();
-        game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
         game.scale.pageAlignHorizontally = true;
         game.scale.pageAlignVertically = true;
         game.stage.backgroundColor = '#eee';
         game.load.image('ball', 'img/ball.png');
         game.load.image('paddle', 'img/paddle.png');
         game.load.image('brick', 'img/brick.png');
+        game.load.spritesheet('button', 'img/button.png', 120, 40);
     }
     function create() {
         game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -30,7 +33,7 @@ function initAll(){
         ball = game.add.sprite(game.world.width*0.5, game.world.height-25, 'ball');
         ball.anchor.set(0.5);
         game.physics.enable(ball, Phaser.Physics.ARCADE);
-        ball.body.velocity.set(150, -150);
+        
         ball.body.collideWorldBounds = true;
         ball.body.bounce.set(1);
         ball.checkWorldBounds = true;
@@ -52,7 +55,20 @@ function initAll(){
            liveText.text = "Lives: " + lives;
            
         }, this);
-    
+        
+        
+        emitter = game.add.emitter(0, 0, 1000);
+        
+        var bitmap = new Phaser.BitmapData(game, 'pad', 5, 5);
+        
+        bitmap.rect(0,0,5,5,'#0095DD');
+        
+        
+        emitter.makeParticles(bitmap);
+        emitter.gravity = 200;
+        emitter.pysicsBodyType = Phaser.Physics.ARCADE;
+        emitter.bounce.set(0.7);
+        
         paddle = game.add.sprite(game.world.width*0.5, game.world.height-5, 'paddle');
         paddle.anchor.set(0.5,1);
         game.physics.enable(paddle, Phaser.Physics.ARCADE);
@@ -60,27 +76,40 @@ function initAll(){
     		
         initBricks();
         
+        startButton = game.add.button(game.world.width*0.5, game.world.height*0.5, 'button', startGame, this, 1, 0, 2);
+        startButton.anchor.set(0.5);
+        
         scoreText = game.add.text(5,5,"Score: 0", { font: '18px Arial', fill: '#0095DD' });
         liveText = game.add.text(game.world.width-5,5,"Lives: 3", { font: '18px Arial', fill: '#0095DD' });
         liveText.anchor.set(1,0);
-        liveLostText =  game.add.text(game.world.width*0.5,game.world.height*0.5,"You lost a live", { font: '18px Arial', fill: '#0095DD' });
+        liveLostText =  game.add.text(game.world.width*0.5,game.world.height*0.5,"You lost a live! Tab to continue", { font: '18px Arial', fill: '#0095DD' });
         liveLostText.visible = false;
         liveLostText.anchor.set(0.5);
     }
     function update() {
         game.physics.arcade.collide(ball, paddle, ballHitPaddle);
         game.physics.arcade.collide(ball, bricks, ballHitBrick);
-        
+        game.physics.arcade.collide(ball, bricks);
         if(score == brickInfo.count.col*brickInfo.count.row){
             alert("Win");
         }
-        if(lives == 0){
-             alert('Game over!');
-            document.body.innerHTML = "";
-            initAll();
-        }
-        if(!stop)
+        
+        if(!stop){
             paddle.x = game.input.x || game.world.width*0.5;
+        
+            if(lives == 0){
+                alert('Game over!');
+                document.body.innerHTML = "";
+                stop = true;
+                initAll();
+            }
+        }
+    }
+    
+    function startGame(){
+        startButton.destroy();
+        stop = false;
+        ball.body.velocity.set(150, -150);
     }
     function initBricks() {
         brickInfo = {
@@ -115,12 +144,21 @@ function initAll(){
         killTween.onComplete.addOnce(function(){
             brick.kill();
         }, this);
+        //  Position the emitter where the mouse/touch event was
+        emitter.x = brick.x;
+        emitter.y = brick.y;
+    
+        //  The first parameter sets the effect to "explode" which means all particles are emitted at once
+        //  The second gives each particle a 2000ms lifespan
+        //  The third is ignored when using burst/explode mode
+        //  The final parameter (10) is how many particles will be emitted in this single burst
+        emitter.start(true, 2000, null, 100);
         killTween.start();
         score++;
         scoreText.text = "Score: " + score;
     }
     function ballHitPaddle(ball, paddle){
-        ball.body.velocity.x = (ball.x-paddle.x) * 2.3;
+        ball.body.velocity.x = (ball.x-paddle.x) * 5;
     }
     // this function (needed only on JSFiddle) take care of loading the images from the remote server
     function handleRemoteImagesOnJSFiddle() {
