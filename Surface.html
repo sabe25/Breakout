@@ -1,11 +1,44 @@
 <html>
     <head>
-        <script type="text/javascript" src="./Logic.js"></script>
-        <script type="text/javascript" src="https://end3r.github.io/Gamedev-Phaser-Content-Kit/demos/js/phaser.2.4.2.min.js"></script>
+        <script type="text/javascript" src="./Level1.js"></script>    
+        <script type="text/javascript" src="./Base.js"></script>
+            
         
+
+        <script type="text/javascript" src="https://end3r.github.io/Gamedev-Phaser-Content-Kit/demos/js/phaser.2.4.2.min.js"></script>
+        <script type="text/javascript" >
+            var game;
+            window.onload = function(){
+                game = new Phaser.Game(560, 400, Phaser.AUTO); 
+                
+                //var lvl1 = new BasisGame.Level1(game);
+                game.state.add('Level1',BasicGame);
+                
+                game.state.start('Level1');
+            };
+            var isMobile =detectmob();
+            
+            
+            function detectmob() { 
+                if( navigator.userAgent.match(/Android/i)
+                || navigator.userAgent.match(/webOS/i)
+                || navigator.userAgent.match(/iPhone/i)
+                || navigator.userAgent.match(/iPad/i)
+                || navigator.userAgent.match(/iPod/i)
+                || navigator.userAgent.match(/BlackBerry/i)
+                || navigator.userAgent.match(/Windows Phone/i)
+                ){
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            
+        </script>
     </head>
     
-    <body onload="initAll()" style="overflow:none">
+    <body>
         
     </body>
 </html>
