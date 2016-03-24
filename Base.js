@@ -3,7 +3,7 @@ var BasicGame = {}
 
 BasicGame = function(){
     
-    this.levelinfo = LevelInfo[4];
+    this.levelinfo = LevelInfo[0];
     this.level = 1;
     this.ball;
     this.paddle;
@@ -27,24 +27,42 @@ BasicGame = function(){
     this.speedBase = 5;
     this.speed = this.speedBase;
     this.speedScore = 0;
-    this.brickSize ={
+    this.brickSize = {
           width:0,
           height:0,
           marginleft:(50 + this.levelinfo.padding/2),
           margintop:(30 +this.levelinfo.padding/2)
         };
+        this.SpeedText;
 };
 
 
 
 BasicGame.prototype = {
         
+    reset : function(){
+            
+        this.score = 0;
+        this.lives = 3;
+        this.levelinfo = LevelInfo[0];
+        this.level = 1;
+        this.brickSize = {
+          width:0,
+          height:0,
+          marginleft:(50 + this.levelinfo.padding/2),
+          margintop:(30 +this.levelinfo.padding/2)
+        };
+        this.speedBase =game.world.height/74;
+        this.speedIncrease = this.speedBase*0.2;
+        this.speed = this.speedBase;
+        this.speedScore = 0;
+    },
         
         
     startGame : function (){
         this.startButton.destroy();
         this.stop = false;
-        this.ball.body.velocity.set(0, -150);
+        this.ball.body.velocity.set(0, -30 * this.speed);
     },
     
     ballHitBrick : function (ball, brick) {
@@ -75,7 +93,7 @@ BasicGame.prototype = {
             
             this.combo++;
             
-            if(this.combo >3) this.speedScore += this.combo*10;
+            if(this.combo >3) this.speedScore += 10;
             this.comboText.text = "Combo: " + this.combo;
             this.scoreText.text = "Score: " + this.score;
             
@@ -86,7 +104,7 @@ BasicGame.prototype = {
             */
             //brick.key.rect(0,0,this.brickSize.width,this.brickSize.height,"hsl(210,90%,"+(90 - brick.stat*8 )+"%)" );
             var bitmap = new Phaser.BitmapData(game,'brick',this.brickSize.width,this.brickSize.height);
-            bitmap.rect(0,0,this.brickSize.width,this.brickSize.height,"hsl(210,90%,"+(90 - brick.stat*10 )+"%)" );
+            bitmap.rect(0,0,this.brickSize.width,this.brickSize.height,"hsl("+this.levelinfo.color+",90%,"+(90 - brick.stat*10 )+"%)" );
             
             brick.key = bitmap;
             brick.loadTexture(bitmap,0);
@@ -99,10 +117,10 @@ BasicGame.prototype = {
         this.comboText.text = "Combo: " + this.combo;
     },
 // this function (needed only on JSFiddle) take care of loading the images from the remote server
-    handleRemoteImagesOnJSFiddle : function () {
+    /*handleRemoteImagesOnJSFiddle : function () {
     	game.load.baseURL = 'https://end3r.github.io/Gamedev-Phaser-Content-Kit/demos/';
     	game.load.crossOrigin = 'anonymous';
-    },
+    },*/
     initBricks : function () {
         this.bricks.removeAll(true);
         //this.bricks = game.add.group();
@@ -118,6 +136,9 @@ BasicGame.prototype = {
         this.brickSize.height = this.brickSize.width * 0.4;
         
         
+        
+        
+        
         for(var r=0; r<matrix.row; r++) {
             for( var c=0; c<matrix.col; c++) {
                 if(this.levelinfo.matrix[r][c] !=0){
@@ -125,7 +146,7 @@ BasicGame.prototype = {
                     var brickY = (r*(this.brickSize.height+this.levelinfo.padding))+this.brickSize.margintop;
                     var bitmap = new Phaser.BitmapData(game,'brick',this.brickSize.width,this.brickSize.height);
                     bitmap.rect(0,0,this.brickSize.width,this.brickSize.height,
-                        "hsl(210,90%,"+(90 - this.levelinfo.matrix[r][c]*10 )+"%)" );
+                        "hsl("+this.levelinfo.color+",90%,"+(90 - this.levelinfo.matrix[r][c]*10 )+"%)" );
                     
                     this.newBrick = game.add.sprite(brickX, brickY, bitmap);
                     game.physics.enable(this.newBrick, Phaser.Physics.ARCADE);
@@ -140,22 +161,27 @@ BasicGame.prototype = {
         
 }
 BasicGame.prototype.preload = function() {
-	this.handleRemoteImagesOnJSFiddle();
-    game.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
-    game.scale.pageAlignHorizontally = true;
-    game.scale.pageAlignVertically = true;
-    game.stage.backgroundColor = '#eee';
-    game.load.image('ball', 'img/ball.png');
-    game.load.image('paddle', 'img/paddle.png');
+	//this.handleRemoteImagesOnJSFiddle();
+   this.reset();
+    var ball = game.add.bitmapData(20,20);
+    ball.circle(10,10,10,'#0095DD');
+    game.cache.addBitmapData('ball', ball);   
+    //game.load.image('ball', 'img/ball.png');
+    
+    var paddle = game.add.bitmapData(75,10);
+    paddle.rect(0,0,75,10,'#0095DD');
+    game.cache.addBitmapData('paddle', paddle);   
+    //game.load.image('paddle', 'img/paddle.png');
     //game.load.image('brick', 'img/brick.png');
-    game.load.spritesheet('button', 'img/button.png', 120, 40);
+    game.load.spritesheet('btnStart', 'img/StartButton.png', 120, 40);
+   
     
 };
     
 BasicGame.prototype.create = function () {
     game.physics.startSystem(Phaser.Physics.ARCADE);
     game.physics.arcade.checkCollision.down = false;
-    this.ball = game.add.sprite(game.world.width*0.5, game.world.height-25, 'ball');
+    this.ball = game.add.sprite(game.world.width*0.5, game.world.height-25, game.cache.getBitmapData('ball'));
     this.ball.anchor.set(0.5);
     game.physics.enable(this.ball, Phaser.Physics.ARCADE);
     
@@ -174,12 +200,12 @@ BasicGame.prototype.create = function () {
            this.game.input.onDown.addOnce(function(){
                  this.stop = false;
                  this.liveLostText.visible = false;
-                 this.ball.body.velocity.set(0, -150);
+                 this.ball.body.velocity.set(0, -30 * this.speed);
            },this);
        }
        
        this.stop = true;
-       this.liveText.text = "Lives: " + this.lives;
+       this.liveText.text = "Lifes: " + this.lives;
        
     }, this);
     
@@ -196,16 +222,16 @@ BasicGame.prototype.create = function () {
     this.emitter.pysicsBodyType = Phaser.Physics.ARCADE;
     this.emitter.bounce.set(0.7);
     
-    this.paddle = game.add.sprite(game.world.width*0.5, game.world.height-5, 'paddle');
+    this.paddle = game.add.sprite(game.world.width*0.5, game.world.height-5, game.cache.getBitmapData('paddle'));
     this.paddle.anchor.set(0.5,1);
     game.physics.enable(this.paddle, Phaser.Physics.ARCADE);
     this.paddle.body.immovable = true;
     
-    this.startButton = game.add.button(game.world.width*0.5, game.world.height*0.5, 'button', this.startGame, this, 1, 0, 2);
+    this.startButton = game.add.button(game.world.width*0.5, game.world.height*0.5, 'btnStart', this.startGame, this, 1, 0, 2);
     this.startButton.anchor.set(0.5);
     
     this.scoreText = game.add.text(5,5,"Score: " + this.score, { font: '18px Arial', fill: '#0095DD' });
-    this.liveText = game.add.text(game.world.width-5,5,"Lives: " + this.lives, { font: '18px Arial', fill: '#0095DD' });
+    this.liveText = game.add.text(game.world.width-5,5,"Lifes: " + this.lives, { font: '18px Arial', fill: '#0095DD' });
     this.liveText.anchor.set(1,0);
     this.liveLostText =  game.add.text(game.world.width*0.5,game.world.height*0.5,"You lost a live! Tab to continue", { font: '18px Arial', fill: '#0095DD' });
     this.liveLostText.visible = false;
@@ -220,7 +246,9 @@ BasicGame.prototype.create = function () {
     
     this.comboText = game.add.text(5,game.world.height-5,"Combo: "+this.combo, { font: '18px Arial', fill: '#0095DD' });
     this.comboText.anchor.set(0,1);
-    
+    this.SpeedText = game.add.text(game.world.width-5,game.world.height-5,"Speed: " + this.speedBase + 
+            "\nSpeedIncrease: " + this.speedIncrease + "\nSpeedScore: " + this.speedScore, { font: '18px Arial', fill: '#0095DD' });
+    this.SpeedText.anchor.set(1,1);
     
     this.winText = game.add.text(game.world.width*0.5,game.world.height*0.5,
                     "OH my God!! You did it :D\nWanna play again?", { font: '18px Arial', fill: '#0095DD' });
@@ -232,14 +260,14 @@ BasicGame.prototype.create = function () {
     
 BasicGame.prototype.update = function () {
     game.physics.arcade.collide(this.ball, this.paddle, this.ballHitPaddle,null,this);
-    game.physics.arcade.overlap(this.ball, this.bricks, this.ballHitBrick,null,this);
+    game.physics.arcade.collide(this.ball, this.bricks, this.ballHitBrick,null,this);
     game.physics.arcade.collide(this.emitter, this.bricks);
     if(this.bricks.length == 0){
         this.level ++;
         if(this.level > LevelInfo.length){
             this.winText.visible = true;
             this.stop = true;
-            this.game.input.onDown.addOnce(function(){
+            /*this.game.input.onDown.addOnce(function(){
                 this.level=1;
                 this.levelinfo = LevelInfo[this.level-1];
                 this.lvlText.text = "Level: " + this.level;
@@ -250,7 +278,11 @@ BasicGame.prototype.update = function () {
                 this.stop = false;
                 this.winText.visible = false;
                 this.ball.body.velocity.set(150, -150);
-            },this);
+            },this);*/
+            alert("You beat all Level!! :D Score: " + this.score);
+            game.state.start('Menu');
+            /*$("#hsPopUp").show();
+            $("#txtscore").text(this.score);*/
         }
         else{
             
@@ -264,9 +296,14 @@ BasicGame.prototype.update = function () {
             this.ball.reset(game.world.width*0.5, game.world.height-25);
             this.paddle.reset(game.world.width*0.5, game.world.height-5);
             this.game.input.onDown.addOnce(function(){
+                var parts = new Phaser.BitmapData(game, 'pad', 5, 5);
+    
+                parts.rect(0,0,5,5,"hsl("+this.levelinfo.color+",90%,80%)");
+                this.emitter.forEach (function(particle,parts){particle.key = parts; particle.loadTexture(parts,0);}, this,false,parts);
+                this.speedBase += 0.5;
                 this.stop = false;
                 this.nextLvlText.visible = false;
-                this.ball.body.velocity.set(0, -150);
+                this.ball.body.velocity.set(0, -30 * this.speed);
             },this);
         }
             
@@ -276,16 +313,19 @@ BasicGame.prototype.update = function () {
     if(!this.stop){
         this.paddle.x = game.input.x - (isMobile?100:0) || game.world.width*0.5;
     
-        if(this.lives == 0){
-            alert('Game over!');
-            document.body.innerHTML = "";
-            this.stop = true;
-           
-            //initAll();
-        }
+        
     }
     
-    
-    this.speed = this.speedBase + Math.floor(this.speedScore/100);
-    
+    if(this.lives == 0){
+            alert('Game over! Score:' + this.score);
+            //document.body.innerHTML = "";
+            this.stop = true;
+            game.state.start('Menu');
+            /*$("#hsPopUp").show();
+            $("#txtscore").text(this.score);*/
+            //initAll();
+        }
+    this.speed =  Math.floor(this.speedBase +this.speedScore/100*this.speedIncrease);
+    this.SpeedText.text = "Speed: " + this.speed+ "\nSpeedBase: " + this.speedBase + 
+            "\nSpeedIncrease: " + this.speedIncrease + "\nSpeedScore: " + this.speedScore;
 };
