@@ -232,7 +232,7 @@ BasicGame.prototype.create = function () {
     
 BasicGame.prototype.update = function () {
     game.physics.arcade.collide(this.ball, this.paddle, this.ballHitPaddle,null,this);
-    game.physics.arcade.collide(this.ball, this.bricks, this.ballHitBrick,null,this);
+    game.physics.arcade.overlap(this.ball, this.bricks, this.ballHitBrick,null,this);
     game.physics.arcade.collide(this.emitter, this.bricks);
     if(this.bricks.length == 0){
         this.level ++;

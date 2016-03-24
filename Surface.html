@@ -3,13 +3,24 @@
         <script type="text/javascript" src="./Level1.js"></script>    
         <script type="text/javascript" src="./Base.js"></script>
             
-        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
 
         <script type="text/javascript" src="https://end3r.github.io/Gamedev-Phaser-Content-Kit/demos/js/phaser.2.4.2.min.js"></script>
         <script type="text/javascript" >
             var game;
             window.onload = function(){
-                game = new Phaser.Game(560, 400, Phaser.AUTO); 
+                
+                var browserWidth = $(window).width()-50;
+                var browserHeight = Math.floor(browserWidth *0.71428);
+                
+                if(browserHeight > window.innerHeight){
+                    var browserHeight = window.innerHeight-50;
+                    var browserWidth = Math.floor(browserHeight /0.71428);
+                    
+                }
+                
+                
+                game = new Phaser.Game(browserWidth, browserHeight, Phaser.AUTO); 
                 
                 //var lvl1 = new BasisGame.Level1(game);
                 game.state.add('Level1',BasicGame);
