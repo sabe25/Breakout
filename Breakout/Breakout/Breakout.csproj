@@ -51,9 +51,9 @@
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Base.js" />
-    <Content Include="DefaultLevel.js" />
-    <Content Include="Highscore.js" />
+    <Content Include="js\Base.js" />
+    <Content Include="js\DefaultLevel.js" />
+    <Content Include="js\Highscore.js" />
     <Content Include="Highscore.txt" />
     <Content Include="img\ArrowButton.png" />
     <Content Include="img\BackButton.png" />
@@ -61,8 +61,8 @@
     <Content Include="img\HighscoreButton.png" />
     <Content Include="img\StartButton.png" />
     <Content Include="index.html" />
-    <Content Include="Level1.js" />
-    <Content Include="Menu.js" />
+    <Content Include="js\Level1.js" />
+    <Content Include="js\Menu.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
