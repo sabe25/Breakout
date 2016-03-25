@@ -43,11 +43,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="img\readme.md" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Base.js" />
+    <Content Include="DefaultLevel.js" />
+    <Content Include="Highscore.js" />
+    <Content Include="Highscore.txt" />
+    <Content Include="img\ArrowButton.png" />
+    <Content Include="img\BackButton.png" />
+    <Content Include="img\GameButton.png" />
+    <Content Include="img\HighscoreButton.png" />
+    <Content Include="img\StartButton.png" />
+    <Content Include="index.html" />
+    <Content Include="Level1.js" />
+    <Content Include="Menu.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
