@@ -224,9 +224,10 @@ BasicGame.prototype.create = function () {
     
     this.emitter = game.add.emitter(0, 0, 1000);
     
-    var bitmap = new Phaser.BitmapData(game, 'pad', 5, 5);
+    var particelSize = Math.ceil(game.world.width*0.01);
+    var bitmap = new Phaser.BitmapData(game, 'pad', particelSize, particelSize);
     
-    bitmap.rect(0,0,5,5,"hsl("+this.levelinfo.color+",90%,80%)");
+    bitmap.rect(0,0,particelSize,particelSize,"hsl("+this.levelinfo.color+",90%,80%)");
     
     
     this.emitter.makeParticles(bitmap);
