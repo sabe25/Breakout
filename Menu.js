@@ -4,6 +4,7 @@ var Menu = {}
 Menu = function(){
     this.startButton;
     this.HighscoreButton;
+    this.descipText;
 };
 
 
@@ -31,7 +32,8 @@ Menu.prototype.preload = function() {
 Menu.prototype.create = function () {
     this.startButton = game.add.button(game.world.width*0.5, game.world.height*0.25, 'btnGame', this.gotoBase, this, 1, 0, 2);
     this.startButton.anchor.set(0.5);
-    
+     this.descipText = game.add.text(game.world.width/2,game.world.height/2,"P - Pause\nMouse to move the Paddle", { font: '18px Arial', fill: '#0095DD' });
+    this.descipText.anchor.set(0.5);
     /*this.HighscoreButton = game.add.button(game.world.width*0.5, game.world.height*0.75, 'btnHighscore', this.gotoHighscore, this, 1, 0, 2);
     this.HighscoreButton.anchor.set(0.5);*/
 };

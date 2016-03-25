@@ -1,0 +1,119 @@
+<html>
+    <head>
+        <script type="text/javascript" src="./Level1.js"></script>    
+        <script type="text/javascript" src="./Base.js"></script>
+            <script type="text/javascript" src="./Menu.js"></script>
+            <script type="text/javascript" src="./Highscore.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+
+        <script type="text/javascript" src="https://end3r.github.io/Gamedev-Phaser-Content-Kit/demos/js/phaser.2.4.2.min.js"></script>
+        <script type="text/javascript" >
+            var game;
+            window.onload = function(){
+                
+                var browserWidth = $(window).width()-50;
+                var browserHeight = Math.floor(browserWidth *0.71428);
+                
+                if(browserHeight > window.innerHeight){
+                    var browserHeight = window.innerHeight-50;
+                    var browserWidth = Math.floor(browserHeight /0.71428);
+                    
+                }
+                
+                
+                game = new Phaser.Game(browserWidth, browserHeight, Phaser.AUTO); 
+                
+                //var lvl1 = new BasisGame.Level1(game);
+                game.state.add('BasicGame',BasicGame);
+                game.state.add('Menu',Menu);
+                game.state.add('Highscore',Highscore);
+                
+                game.state.start('Menu');
+            };
+            var isMobile =detectmob();
+            
+            
+            function detectmob() { 
+                if( navigator.userAgent.match(/Android/i)
+                || navigator.userAgent.match(/webOS/i)
+                || navigator.userAgent.match(/iPhone/i)
+                || navigator.userAgent.match(/iPad/i)
+                || navigator.userAgent.match(/iPod/i)
+                || navigator.userAgent.match(/BlackBerry/i)
+                || navigator.userAgent.match(/Windows Phone/i)
+                ){
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+            
+            var highscoreJson ="";
+            function readHighscore()
+            {
+                var rawFile = new XMLHttpRequest();
+                rawFile.open("GET", "Highscore.txt", true);
+                var ready = false;
+                rawFile.onreadystatechange = function ()
+                {
+                    if(rawFile.readyState === 4)
+                    {
+                        highscoreJson = rawFile.responseText;
+                    }
+                }
+            
+                rawFile.send();
+            }
+            
+            function addScore(name,score){
+                var ranks = JSON.parse(highscoreJson);
+                var added = false;
+                for(var i = 0; i< ranks.ranking.length;i++){
+                    if(score > ranks.ranking[i][1]){
+                       for(var k = ranks.ranking.length; k>i;k--){
+                           ranks.ranking[k] = ranks.ranking[k-1];
+                       }
+                       ranks.ranking[i][1] = score;
+                       ranks.ranking[i][0] = name;
+                       added = true;
+                    }
+                }
+                if(!added){
+                    ranks.ranking[ranks.ranking.length] =[];
+                    ranks.ranking[ranks.ranking.length-1][0] = name;
+                    ranks.ranking[ranks.ranking.length-1][1] = score;
+                }
+                var s = JSON.stringify(ranks);
+                writeTextFile(s);
+            }
+            
+            function writeTextFile(output) {
+            	var txtFile = new File(document.domain + "/Highscore.txt");
+            	txtFile.open("w"); //
+            	txtFile.writeln(output);
+            	txtFile.close();
+            }
+            
+            function PopUpOK(){
+                game.state.start('Menu');
+                /*$('#hsPopUp').hide();
+                addScore($('#hsname').val(),$('#txtscore').text());
+                readHighscore();*/
+            }
+            
+        </script>
+    </head>
+    
+    <body>
+        
+        <div id="hsPopUp" style="display:none;margin-left: auto; margin-right: auto; width: 234px; height: 119px; position: absolute; top: 30%; left: 30%; text-align: center; background: white none repeat scroll 0% 0%;">
+            <p>Gib deinen Namen ein um in den Highscore zu kommen.</p>
+            <p id="txtscore"></p>
+            <input type="text" id="hsname"/>
+            
+            <button type="button" onclick="PopUpOK() ">Weiter</button>
+        </div>
+        
+    </body>
+</html>

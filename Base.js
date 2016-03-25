@@ -31,9 +31,15 @@ BasicGame = function(){
           width:0,
           height:0,
           marginleft:(50 + this.levelinfo.padding/2),
-          margintop:(30 +this.levelinfo.padding/2)
+          margintop:(30 +this.levelinfo.padding/2),
+          padding:0
         };
         this.SpeedText;
+    this.debug = false;
+    this.pauseText;
+    this.ballspeedX;
+    this.ballspeedY;
+    this.pause;
 };
 
 
@@ -50,12 +56,14 @@ BasicGame.prototype = {
           width:0,
           height:0,
           marginleft:(50 + this.levelinfo.padding/2),
-          margintop:(30 +this.levelinfo.padding/2)
+          margintop:(30 +this.levelinfo.padding/2),
+          padding:0
         };
         this.speedBase =game.world.height/74;
         this.speedIncrease = this.speedBase*0.2;
         this.speed = this.speedBase;
         this.speedScore = 0;
+        this.pause = false;
     },
         
         
@@ -113,6 +121,7 @@ BasicGame.prototype = {
     ballHitPaddle : function (ball, paddle){
         ball.body.velocity.x = (ball.x-paddle.x) * this.speed;
         ball.body.velocity.y = -30 * this.speed;
+        
         this.combo = 0;
         this.comboText.text = "Combo: " + this.combo;
     },
@@ -129,10 +138,11 @@ BasicGame.prototype = {
             row:this.levelinfo.matrix.length
         };
         
+        this.brickSize.padding = game.world.width*0.021*this.levelinfo.padding/10;
+        this.brickSize.marginleft=(game.world.width*0.106 + this.brickSize.padding/2);
+        this.brickSize.margintop=(game.world.width*0.064 +this.brickSize.padding/2);
         
-        this.brickSize.marginleft=(50 + this.levelinfo.padding/2);
-        this.brickSize.margintop=(30 +this.levelinfo.padding/2);
-        this.brickSize.width = (game.world.width-(2*this.brickSize.marginleft))/matrix.col - this.levelinfo.padding;
+        this.brickSize.width = (game.world.width-(2*this.brickSize.marginleft))/matrix.col - this.brickSize.padding;
         this.brickSize.height = this.brickSize.width * 0.4;
         
         
@@ -142,8 +152,8 @@ BasicGame.prototype = {
         for(var r=0; r<matrix.row; r++) {
             for( var c=0; c<matrix.col; c++) {
                 if(this.levelinfo.matrix[r][c] !=0){
-                    var brickX = (c*(this.brickSize.width+this.levelinfo.padding))+this.brickSize.marginleft;
-                    var brickY = (r*(this.brickSize.height+this.levelinfo.padding))+this.brickSize.margintop;
+                    var brickX = (c*(this.brickSize.width+this.brickSize.padding))+this.brickSize.marginleft;
+                    var brickY = (r*(this.brickSize.height+this.brickSize.padding))+this.brickSize.margintop;
                     var bitmap = new Phaser.BitmapData(game,'brick',this.brickSize.width,this.brickSize.height);
                     bitmap.rect(0,0,this.brickSize.width,this.brickSize.height,
                         "hsl("+this.levelinfo.color+",90%,"+(90 - this.levelinfo.matrix[r][c]*10 )+"%)" );
@@ -163,13 +173,15 @@ BasicGame.prototype = {
 BasicGame.prototype.preload = function() {
 	//this.handleRemoteImagesOnJSFiddle();
    this.reset();
-    var ball = game.add.bitmapData(20,20);
-    ball.circle(10,10,10,'#0095DD');
+   var ballsize = game.world.width*0.038
+   var ballsize2 = ballsize/2;
+    var ball = game.add.bitmapData(ballsize,ballsize);
+    ball.circle(ballsize2,ballsize2,ballsize2,'#0095DD');
     game.cache.addBitmapData('ball', ball);   
     //game.load.image('ball', 'img/ball.png');
     
-    var paddle = game.add.bitmapData(75,10);
-    paddle.rect(0,0,75,10,'#0095DD');
+    var paddle = game.add.bitmapData(game.world.width*0.15,10);
+    paddle.rect(0,0,game.world.width*0.15,10,'#0095DD');
     game.cache.addBitmapData('paddle', paddle);   
     //game.load.image('paddle', 'img/paddle.png');
     //game.load.image('brick', 'img/brick.png');
@@ -214,7 +226,7 @@ BasicGame.prototype.create = function () {
     
     var bitmap = new Phaser.BitmapData(game, 'pad', 5, 5);
     
-    bitmap.rect(0,0,5,5,"hsl(210,90%,80%)");
+    bitmap.rect(0,0,5,5,"hsl("+this.levelinfo.color+",90%,80%)");
     
     
     this.emitter.makeParticles(bitmap);
@@ -249,18 +261,55 @@ BasicGame.prototype.create = function () {
     this.SpeedText = game.add.text(game.world.width-5,game.world.height-5,"Speed: " + this.speedBase + 
             "\nSpeedIncrease: " + this.speedIncrease + "\nSpeedScore: " + this.speedScore, { font: '18px Arial', fill: '#0095DD' });
     this.SpeedText.anchor.set(1,1);
+    this.SpeedText.visible =false;
     
     this.winText = game.add.text(game.world.width*0.5,game.world.height*0.5,
                     "OH my God!! You did it :D\nWanna play again?", { font: '18px Arial', fill: '#0095DD' });
     this.winText.anchor.set(0.5);
     this.winText.visible =false;
+    
+    
+    
+    
     this.bricks = game.add.group();
     this.initBricks();
+    
+    var debugKey = game.input.keyboard.addKey(Phaser.Keyboard.D);
+     debugKey.onDown.add(function(){
+         this.debug = !this.debug;
+         this.SpeedText.visible = !this.SpeedText.visible;
+     },this);
+     
+     this.pauseText = game.add.text(game.world.width/2,game.world.height/2,"Pause", { font: '18px Arial', fill: '#0095DD' });
+    this.pauseText.anchor.set(0.5);
+    this.pauseText.visible = false;
+     var pauseKey = game.input.keyboard.addKey(Phaser.Keyboard.P);
+     pauseKey.onDown.add(function(){
+         if(!this.stop){
+             this.pause = !this.pause;
+             if(this.pause){
+                 this.ball.body.velocity.set(0, 0);
+                 this.pauseText.visible = true;
+             }
+             else{
+                this.ball.body.velocity.x = this.ballspeedX;
+                this.ball.body.velocity.y = this.ballspeedY;
+                this.pauseText.visible = false;
+             }
+         }
+     },this);
+     
+     this.ballspeedY = -30 * this.speed;
+     this.ballspeedX = 0;
 };
     
 BasicGame.prototype.update = function () {
     game.physics.arcade.collide(this.ball, this.paddle, this.ballHitPaddle,null,this);
     game.physics.arcade.collide(this.ball, this.bricks, this.ballHitBrick,null,this);
+    
+    
+    
+    
     game.physics.arcade.collide(this.emitter, this.bricks);
     if(this.bricks.length == 0){
         this.level ++;
@@ -310,9 +359,10 @@ BasicGame.prototype.update = function () {
     }
     if(this.combo <2)this.comboText.visible =false;
     if(this.combo == 2)this.comboText.visible =true;
-    if(!this.stop){
+    if(!this.stop && !this.pause){
         this.paddle.x = game.input.x - (isMobile?100:0) || game.world.width*0.5;
-    
+        this.ballspeedX = this.ball.body.velocity.x;
+        this.ballspeedY = this.ball.body.velocity.y;
         
     }
     
@@ -326,6 +376,9 @@ BasicGame.prototype.update = function () {
             //initAll();
         }
     this.speed =  Math.floor(this.speedBase +this.speedScore/100*this.speedIncrease);
-    this.SpeedText.text = "Speed: " + this.speed+ "\nSpeedBase: " + this.speedBase + 
-            "\nSpeedIncrease: " + this.speedIncrease + "\nSpeedScore: " + this.speedScore;
+    if(this.debug){
+        this.SpeedText.text = "Speed: " + this.speed+ "\nSpeedBase: " + this.speedBase + 
+            "\nSpeedIncrease: " + this.speedIncrease + "\nSpeedScore: " + this.speedScore +
+            "\nSpeedDirection: " + this.ballspeedX + " " + this.ballspeedY;
+    }
 };
